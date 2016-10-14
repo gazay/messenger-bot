@@ -40,16 +40,24 @@ class Bot extends EventEmitter {
   sendMessage (recipient, payload, cb) {
     if (!cb) cb = Function.prototype
 
+    if (payload.sender_action) {
+      payload = {
+        recipient: { id: recipient },
+        sender_action: payload.sender_action
+      }
+    } else {
+      payload = {
+        recipient: { id: recipient },
+        message: payload
+      }
+    }
     request({
       method: 'POST',
       uri: 'https://graph.facebook.com/v2.6/me/messages',
       qs: {
         access_token: this.token
       },
-      json: {
-        recipient: { id: recipient },
-        message: payload
-      }
+      json: payload
     }, (err, res, body) => {
       if (err) return cb(err)
       if (body.error) return cb(body.error)
